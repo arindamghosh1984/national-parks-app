@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>National Parks Tracker</title>
+
+<style>
+body {
+  font-family: -apple-system, Arial;
+  margin: 0;
+  background: #eef2f3;
+}
+
+header {
+  background: #2e7d32;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+
+#search {
+  width: 90%;
+  padding: 10px;
+  margin: 10px auto;
+  display: block;
+  border-radius: 8px;
+  border: none;
+}
+
+#progress-container {
+  margin: 10px;
+  background: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#progress-bar {
+  height: 15px;
+  width: 0%;
+  background: #2e7d32;
+}
+
+.park {
+  background: white;
+  margin: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+button {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-left: 5px;
+}
+
+.favorite {
+  background: gold;
+}
+
+.map {
+  background: #1976d2;
+  color: white;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>🌲 National Parks Tracker</h2>
+  <div id="stats"></div>
+</header>
+
+<input id="search" placeholder="Search parks...">
+
+<div id="progress-container">
+  <div id="progress-bar"></div>
+</div>
+
+<div id="list"></div>
+
+<script>
+const parks = [
+"Acadia","American Samoa","Arches","Badlands","Big Bend","Biscayne",
+"Black Canyon of the Gunnison","Bryce Canyon","Canyonlands","Capitol Reef",
+"Carlsbad Caverns","Channel Islands","Congaree","Crater Lake",
+"Cuyahoga Valley","Death Valley","Denali","Dry Tortugas","Everglades",
+"Gates of the Arctic","Gateway Arch","Glacier","Glacier Bay",
+"Grand Canyon","Grand Teton","Great Basin","Great Sand Dunes",
+"Great Smoky Mountains","Guadalupe Mountains","Haleakalā",
+"Hawai‘i Volcanoes","Hot Springs","Indiana Dunes","Isle Royale",
+"Joshua Tree","Katmai","Kenai Fjords","Kings Canyon",
+"Kobuk Valley","Lake Clark","Lassen Volcanic","Mammoth Cave",
+"Mesa Verde","Mount Rainier","New River Gorge","North Cascades",
+"Olympic","Petrified Forest","Pinnacles","Redwood","Rocky Mountain",
+"Saguaro","Sequoia","Shenandoah","Theodore Roosevelt",
+"Virgin Islands","Voyageurs","White Sands","Wind Cave",
+"Wrangell–St. Elias","Yellowstone","Yosemite","Zion"
+];
+
+const list = document.getElementById("list");
+
+function render(filter="") {
+  list.innerHTML = "";
+
+  parks
+    .filter(p => p.toLowerCase().includes(filter.toLowerCase()))
+    .forEach(park => {
+      const div = document.createElement("div");
+      div.className = "park";
+
+      const row = document.createElement("div");
+      row.className = "row";
+
+      const left = document.createElement("div");
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = localStorage.getItem(park) === "true";
+
+      checkbox.onchange = () => {
+        localStorage.setItem(park, checkbox.checked);
+        updateStats();
+      };
+
+      const label = document.createElement("span");
+      label.innerText = " " + park;
+
+      left.appendChild(checkbox);
+      left.appendChild(label);
+
+      const right = document.createElement("div");
+
+      const fav = document.createElement("button");
+      fav.innerText = "⭐";
+      fav.className = localStorage.getItem(park+"fav") === "true" ? "favorite" : "";
+      fav.onclick = () => {
+        const val = localStorage.getItem(park+"fav") === "true";
+        localStorage.setItem(park+"fav", !val);
+        render(document.getElementById("search").value);
+      };
+
+      const map = document.createElement("button");
+      map.innerText = "Map";
+      map.className = "map";
+      map.onclick = () => {
+        window.open("https://www.google.com/maps/search/" + park + " National Park");
+      };
+
+      right.appendChild(fav);
+      right.appendChild(map);
+
+      row.appendChild(left);
+      row.appendChild(right);
+
+      div.appendChild(row);
+      list.appendChild(div);
+    });
+}
+
+function updateStats() {
+  const visited = parks.filter(p => localStorage.getItem(p) === "true").length;
+  const percent = Math.round((visited / parks.length) * 100);
+
+  document.getElementById("stats").innerText =
+    `${visited} / ${parks.length} visited (${percent}%)`;
+
+  document.getElementById("progress-bar").style.width = percent + "%";
+}
+
+document.getElementById("search").addEventListener("input", (e) => {
+  render(e.target.value);
+});
+
+render();
+updateStats();
+</script>
+
+</body>
+</html>
